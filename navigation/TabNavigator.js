@@ -1,18 +1,59 @@
-import React from 'react';
+import React, { Component } from "react";
 import { Text, View , StyleSheet} from 'react-native';
 import { createMaterialBottomTabNavigator } from '@react-navigation/material-bottom-tabs';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import {RFValue} from 'react-native-responsive-fontsize'
 import Feed from "../screens/Feed";
 import CreatePost from "../screens/CreatePost";
+import firebase from "firebase";
 
 const Tab = createMaterialBottomTabNavigator();
 
-const BottomTabNavigator = () => {
+export default class BottomTabNavigator extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+          light_theme: true,
+          isUpdated:false
+        };
+      }
+      renderFeed = props => {
+        return <Feed setUpdateToFalse={this.removeUpdated} {...props} />;
+      };
+    
+      renderStory = props => {
+        return <CreatePost setUpdateToTrue={this.changeUpdated} {...props} />;
+      };
+
+
+      changeUpdated = () => {
+        this.setState({ isUpdated: true });
+      };
+    
+      removeUpdated = () => {
+        this.setState({ isUpdated: false });
+      };
+    
+      componentDidMount() {
+        let theme;
+        firebase
+          .database()
+          .ref("/users/" + firebase.auth().currentUser.uid)
+          .on("value", function (snapshot) {
+            theme = snapshot.val().current_theme;
+          });
+        this.setState({ light_theme: theme === "light" ? true : false });
+      }
+      render(){
     return (
         <Tab.Navigator
           labeled={false}
-          barStyle={styles.bottomTabStyle}
+
+          barStyle={this.state.light_theme
+            ? styles.bottomTabStyleLight
+            : styles.bottomTabStyle
+        }
+
             screenOptions={({ route }) => ({
                 tabBarIcon: ({ focused, color, size }) => {
                     let iconName;
@@ -31,10 +72,19 @@ const BottomTabNavigator = () => {
                 inactiveColor= {'gray'}
             
         >
-            <Tab.Screen name="Feed" component={Feed} />
-            <Tab.Screen name="CreatePost" component={CreatePost} />
+           <Tab.Screen
+          name="Feed"
+          component={this.renderFeed}
+          options={{ unmountOnBlur: true }}
+        />
+           <Tab.Screen
+          name="Create Post"
+          component={this.renderPost}
+          options={{ unmountOnBlur: true }}
+        />
         </Tab.Navigator>
     );
+}
 }
 
 const styles= StyleSheet.create({
@@ -46,10 +96,16 @@ const styles= StyleSheet.create({
         overflow:'hidden',
         position:'absolute'
     },
+    bottomTabStyleLight: {
+        backgroundColor: "#eaeaea",
+        height: "8%",
+        borderTopLeftRadius: RFValue(30),
+        borderTopRightRadius: RFValue(30),
+        overflow: "hidden",
+        position: "absolute"
+      },
     icons:{
         width:RFValue(30),
         height:RFValue(30),
     }
 })
-
-export default BottomTabNavigator

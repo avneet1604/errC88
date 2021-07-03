@@ -8,62 +8,69 @@ import {
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import { RFValue } from "react-native-responsive-fontsize";
-import firebase from "firebase"
+
+import firebase from "firebase";
 
 export default class PostCard extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            light_theme:true,
+            light_theme: true,
+            post_id: this.props.post.key,
+            post_data: this.props.post.value
         };
     }
 
     componentDidMount() {
-        this.fetchUser()
-     }
+        this.fetchUser();
+    }
 
     fetchUser = () => {
         let theme;
         firebase
-          .database()
-          .ref("/users/" + firebase.auth().currentUser.uid)
-          .on("value", snapshot => {
-            theme = snapshot.val().current_theme;
-            this.setState({ light_theme: theme === "light" });
-          });
-      };
-    
+            .database()
+            .ref("/users/" + firebase.auth().currentUser.uid)
+            .on("value", (snapshot) => {
+                theme = snapshot.val().current_theme
+                this.setState({ light_theme: theme === "light" })
+            })
+    }
 
     render() {
+        let post = this.state.post_data
+        let images = {
+            image_1: require("../assets/image_1.jpg"),
+            image_2: require("../assets/image_2.jpg"),
+            image_3: require("../assets/image_3.jpg"),
+            image_4: require("../assets/image_4.jpg"),
+            image_5: require("../assets/image_5.jpg"),
+            image_6: require("../assets/image_6.jpg"),
+            image_7: require("../assets/image_7.jpg")
+        };
         return (
-            <TouchableOpacity style={styles.container} 
-            onPress={() => this.props.navigation.navigate("PostScreen", post = this.props.post)}>
-
-                  <View style={this.state.light_theme ? styles.cardcontainerLight : styles.cardcontainer}>
+            <TouchableOpacity style={styles.container} onPress={() => this.props.navigation.navigate("PostScreen", post = this.props.post)}>
+                <View style={this.state.light_theme ? styles.cardContainerLight : styles.cardContainer}>
                     <View style={styles.authorContainer}>
                         <View style={styles.authorImageContainer}>
                             <Image
-                                source={require("../assets/profile_img.png")}
+                                source={{ uri: post.profile_image }}
                                 style={styles.profileImage}
                             ></Image>
                         </View>
                         <View style={styles.authorNameContainer}>
-                        <Text style={this.state.light_theme ? styles.authorNameTextLight : styles.authorNameText}>
-                            {this.props.post.author}
-                            </Text>
+                            <Text style={this.state.light_theme ? styles.authorNameTextLight : styles.authorNameText}>{post.author}</Text>
                         </View>
                     </View>
-                    <Image source={require("../assets/image_1.jpg")} style={styles.postImage} />
-
+                    <Image source={images[post.preview_image]} style={styles.postImage} />
                     <View style={styles.captionContainer}>
                         <Text style={this.state.light_theme ? styles.captionTextLight : styles.captionText}>
-                            {this.props.post.caption}
+                            {post.caption}
                         </Text>
                     </View>
                     <View style={styles.actionContainer}>
                         <View style={styles.likeButton}>
-                            <Ionicons name={"heart"} size={RFValue(30)} color={this.state.light_theme ? "black" : "white"} />
-                            <Text style={this.state.light_theme ? styles.likeTextLight : styles.likeText}>12k</Text>
+                            <Ionicons name={"heart"} size={RFValue(30)} color={"white"} />
+                            <Text style={styles.likeText}>12k</Text>
                         </View>
                     </View>
                 </View>
@@ -84,18 +91,19 @@ const styles = StyleSheet.create({
     },
     cardContainerLight: {
         margin: RFValue(13),
-    
+
         backgroundColor: "white",
         borderRadius: RFValue(20),
         shadowColor: "rgb(0, 0, 0)",
         shadowOffset: {
-          width: 3,
-          height: 3
+            width: 3,
+            height: 3
         },
         shadowOpacity: RFValue(0.5),
         shadowRadius: RFValue(5),
-        elevation: RFValue(2)
-      },
+        elevation: RFValue(2),
+        padding: RFValue(20)
+    },
     authorContainer: {
         flex: 0.1,
         flexDirection: "row"
@@ -119,11 +127,10 @@ const styles = StyleSheet.create({
         color: "white",
         fontSize: RFValue(20)
     },
-    AuthorNameTextLight: {
-        fontFamily: "Bubblegum-Sans",
-        fontSize: RFValue(18),
-        color: "black"
-      },
+    authorNameTextLight: {
+        color: "black",
+        fontSize: RFValue(20)
+    },
     postImage: {
         marginTop: RFValue(20),
         resizeMode: "contain",
@@ -135,6 +142,11 @@ const styles = StyleSheet.create({
     captionText: {
         fontSize: 13,
         color: "white",
+        paddingTop: RFValue(10)
+    },
+    captionTextLight: {
+        fontSize: 13,
+        color: "black",
         paddingTop: RFValue(10)
     },
     actionContainer: {
@@ -155,10 +167,5 @@ const styles = StyleSheet.create({
         color: "white",
         fontSize: RFValue(25),
         marginLeft: RFValue(5)
-    },
-    likeTextLight: {
-        fontFamily: "Bubblegum-Sans",
-        fontSize: RFValue(25),
-        marginLeft: RFValue(5)
-      }
-});
+    }
+})

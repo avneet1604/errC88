@@ -21,7 +21,8 @@ export default class Feed extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            light_theme: true
+            light_theme: true,
+            posts:[]
         };
     }
 
@@ -38,7 +39,33 @@ export default class Feed extends Component {
 
     componentDidMount() {
         this.fetchUser();
+        this.fetchPosts();
     }
+
+    fetchPosts = () => {
+        firebase
+          .database()
+          .ref("/posts/")
+          .on(
+            "value",
+            snapshot => {
+              let posts = [];
+              if (snapshot.val()) {
+                Object.keys(snapshot.val()).forEach(function (key) {
+                  posts.push({
+                    key: key,
+                    value: snapshot.val()[key]
+                  });
+                });
+              }
+              this.setState({ posts: posts });
+              this.props.setUpdateToFalse();
+            },
+            function (errorObject) {
+              console.log("The read failed: " + errorObject.code);
+            }
+          );
+      };
 
     renderItem = ({ item: post }) => {
         return <PostCard post={post} navigation={this.props.navigation} />;
@@ -61,6 +88,19 @@ export default class Feed extends Component {
                         <Text style={this.state.light_theme ? styles.appTitleTextLight : styles.appTitleText}>Spectagram</Text>
                     </View>
                 </View>
+                {!this.state.posts[0] ? (
+            <View style={styles.noPosts}>
+              <Text
+                style={
+                  this.state.light_theme
+                    ? styles.noPostsTextLight
+                    : styles.noPostsText
+                }
+              >
+                No Posts Available
+              </Text>
+            </View>
+          ) : (
                 <View style={styles.cardContainer}>
                     <FlatList
                         keyExtractor={this.keyExtractor}
@@ -68,6 +108,7 @@ export default class Feed extends Component {
                         renderItem={this.renderItem}
                     />
                 </View>
+          )}
             </View>
         );
     }
@@ -113,5 +154,17 @@ const styles = StyleSheet.create({
     },
     cardContainer: {
         flex: 0.85
-    }
+    },
+    noPosts: {
+        flex: 0.85,
+        justifyContent: "center",
+        alignItems: "center"
+      },
+      noPostsTextLight: {
+        fontSize: RFValue(40),
+      },
+      noPostsText: {
+        color: "white",
+        fontSize: RFValue(40)
+      }
 });

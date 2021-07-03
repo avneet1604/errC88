@@ -13,8 +13,12 @@ const StackNavigator = () => {
                 headerShown: false
             }}
         >
-            <Stack.Screen name="Home" component={TabNavigator} />
-            <Stack.Screen name="PostScreen" component={PostScreen} />
+            <Stack.Screen name="Home" 
+            component={TabNavigator} />
+
+            <Stack.Screen name="PostScreen" 
+            component={PostScreen} />
+            
         </Stack.Navigator>
     );
 };
